@@ -10,8 +10,10 @@
 #define SERIALIZATION_binary_iarchive_HPP
 
 #include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 namespace serialization
 {
@@ -23,24 +25,37 @@ public:
 	{
 	}
 
-	virtual void load(std::uintmax_t&, std::streamsize) = 0;
+	virtual void load(void* dst, std::size_t size) = 0;
 };
+
+template <typename CharT, typename Traits>
+void load_binary(std::basic_istream<CharT, Traits>& is, void* p, std::size_t size)
+{
+	if constexpr (sizeof(CharT) == 1)
+	{
+		is.read(static_cast<CharT*>(p), size);
+	}
+	else
+	{
+		auto const count = (size + (sizeof(CharT) - 1)) / sizeof(CharT);
+		std::vector<CharT> buf(count);	// TODO basic_stringを使ったほうが、countが小さい場合に高速かもしれない
+		is.read(buf.data(), count);
+		std::memcpy(p, buf.data(), size);
+	}
+}
 
 template <typename IStream>
 class binary_iarchive_impl
 	: public binary_iarchive_impl_base
 {
 public:
-	using char_type = typename IStream::char_type;
-
 	explicit binary_iarchive_impl(IStream& is)
 		: m_is(is)
 	{}
 
-	void load(std::uintmax_t& t, std::streamsize size) override
+	void load(void* dst, std::size_t size) override
 	{
-		auto p = reinterpret_cast<char_type*>(&t);
-		m_is.read(p, (size + (sizeof(char_type) - 1)) / sizeof(char_type));
+		load_binary(m_is, dst, size);
 	}
 
 private:
@@ -75,9 +90,7 @@ private:
 	template <typename T>
 	void load(T& t)
 	{
-		std::uintmax_t i = 0;
-		m_impl->load(i, sizeof(T));
-		t = static_cast<T>(i);
+		m_impl->load(&t, sizeof(T));
 	}
 
 	std::unique_ptr<binary_iarchive_impl_base>	m_impl;

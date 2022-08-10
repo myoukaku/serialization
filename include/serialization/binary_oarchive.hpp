@@ -23,24 +23,37 @@ public:
 	virtual ~binary_oarchive_impl_base()
 	{}
 
-	virtual void save(std::uintmax_t, std::streamsize) = 0;
+	virtual void save(void const* src, std::size_t size) = 0;
 };
+
+template <typename CharT, typename Traits>
+void save_binary(std::basic_ostream<CharT, Traits>& os, void const* p, std::size_t size)
+{
+	if constexpr (sizeof(CharT) == 1)
+	{
+		os.write(static_cast<CharT const*>(p), size);
+	}
+	else
+	{
+		auto const count = (size + (sizeof(CharT) - 1)) / sizeof(CharT);
+		std::vector<CharT> buf(count);	// TODO basic_stringを使ったほうが、countが小さい場合に高速かもしれない
+		std::memcpy(buf.data(), p, size);
+		os.write(buf.data(), count);
+	}
+}
 
 template <typename OStream>
 class binary_oarchive_impl
 	: public binary_oarchive_impl_base
 {
 public:
-	using char_type = typename OStream::char_type;
-
 	explicit binary_oarchive_impl(OStream& os)
 		: m_os(os)
 	{}
 
-	void save(std::uintmax_t t, std::streamsize size) override
+	void save(void const* src, std::size_t size) override
 	{
-		auto p = reinterpret_cast<char_type const*>(&t);
-		m_os.write(p, (size + (sizeof(char_type) - 1)) / sizeof(char_type));
+		save_binary(m_os, src, size);
 	}
 
 private:
@@ -75,7 +88,7 @@ private:
 	template <typename T>
 	void save(T const& t)
 	{
-		m_impl->save(static_cast<std::uintmax_t>(t), sizeof(T));
+		m_impl->save(&t, sizeof(T));
 	}
 
 	std::unique_ptr<binary_oarchive_impl_base>	m_impl;

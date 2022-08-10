@@ -72,7 +72,7 @@ template <typename OArchive, typename IArchive>
 void IntegralTest()
 {
 	IntegralTest2<std::stringstream,  OArchive, IArchive>();
-//	IntegralTest2<std::wstringstream, OArchive, IArchive>();
+	IntegralTest2<std::wstringstream, OArchive, IArchive>();
 }
 
 GTEST_TEST(SerializationTest, IntegralTest)

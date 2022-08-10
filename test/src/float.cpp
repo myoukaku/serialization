@@ -85,10 +85,10 @@ GTEST_TEST(SerializationTest, FloatTest)
 		serialization::text_oarchive,
 		serialization::text_iarchive
 	>();
-	//FloatTest<
-	//	serialization::binary_oarchive,
-	//	serialization::binary_iarchive
-	//>();
+	FloatTest<
+		serialization::binary_oarchive,
+		serialization::binary_iarchive
+	>();
 }
 
 }	// namespace float_test
