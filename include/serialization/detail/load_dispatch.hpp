@@ -68,23 +68,23 @@ private:
 
 		if constexpr (access::is_load_v_invocable<Archive, T>::value)
 		{
-			return access::load_v(ar, t, version);
+			access::load_v(ar, t, version);
 		}
 		else if constexpr (access::is_load_invocable<Archive, T>::value)
 		{
-			return access::load(ar, t);
+			access::load(ar, t);
 		}
 		else if constexpr (is_load_v_invocable<Archive, T>::value)
 		{
-			return load(ar, t, version);
+			load(ar, t, version);
 		}
 		else if constexpr (is_load_invocable<Archive, T>::value)
 		{
-			return load(ar, t);
+			load(ar, t);
 		}
 		else
 		{
-			return serialize_dispatch::invoke(ar, t, version);
+			serialize_dispatch::invoke(ar, t, version);
 		}
 	}
 
@@ -94,11 +94,17 @@ public:
 	{
 		if constexpr (std::is_arithmetic_v<T>)
 		{
-			return ar.load_arithmetic(t);
+			ar.load_arithmetic(t);
+		}
+		else if constexpr (std::is_enum<T>::value)
+		{
+			std::underlying_type_t<T> tmp;
+			ar.load_arithmetic(tmp);
+			t = static_cast<T>(tmp);
 		}
 		else
 		{
-			return load_object(ar, t);
+			load_object(ar, t);
 		}
 	}
 };

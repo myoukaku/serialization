@@ -68,23 +68,23 @@ private:
 
 		if constexpr (access::is_save_v_invocable<Archive, T>::value)
 		{
-			return access::save_version_memfun(ar, t, version);
+			access::save_version_memfun(ar, t, version);
 		}
 		else if constexpr (access::is_save_invocable<Archive, T>::value)
 		{
-			return access::save_memfun(ar, t);
+			access::save_memfun(ar, t);
 		}
 		else if constexpr (is_save_v_invocable<Archive, T>::value)
 		{
-			return save_version_free(ar, t, version);
+			save_version_free(ar, t, version);
 		}
 		else if constexpr (is_save_invocable<Archive, T>::value)
 		{
-			return save_free(ar, t);
+			save_free(ar, t);
 		}
 		else
 		{
-			return serialize_dispatch::invoke(ar, t, version);
+			serialize_dispatch::invoke(ar, t, version);
 		}
 	}
 
@@ -98,15 +98,15 @@ public:
 		//}
 		if constexpr (std::is_arithmetic<T>::value)
 		{
-			return ar.save_arithmetic(t);
+			ar.save_arithmetic(t);
 		}
-		//else if constexpr (std::is_enum<T>::value)
-		//{
-		//	return ar.save_enum(t);
-		//}
+		else if constexpr (std::is_enum<T>::value)
+		{
+			ar.save_arithmetic(static_cast<std::underlying_type_t<T>>(t));
+		}
 		else
 		{
-			return save_object(ar, t);
+			save_object(ar, t);
 		}
 	}
 };
