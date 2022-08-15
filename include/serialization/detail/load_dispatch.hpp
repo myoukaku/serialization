@@ -92,7 +92,14 @@ public:
 	template <typename Archive, typename T>
 	static void invoke(Archive& ar, T& t)
 	{
-		if constexpr (std::is_arithmetic_v<T>)
+		if constexpr (std::is_array<T>::value)
+		{
+			for (std::size_t i = 0; i < std::extent_v<T>; ++i)
+			{
+				ar >> t[i];
+			}
+		}
+		else if constexpr (std::is_arithmetic_v<T>)
 		{
 			ar.load_arithmetic(t);
 		}
