@@ -9,6 +9,7 @@
 #ifndef SERIALIZATION_TEXT_OARCHIVE_HPP
 #define SERIALIZATION_TEXT_OARCHIVE_HPP
 
+#include <serialization/detail/save_dispatch.hpp>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -105,7 +106,7 @@ public:
 	template <typename T>
 	text_oarchive& operator<<(T const& t)
 	{
-		save(t);
+		serialization::detail::save_dispatch::invoke(*this, t);
 		return *this;
 	}
 
@@ -117,7 +118,7 @@ public:
 
 private:
 	template <typename T>
-	void save(T const& t)
+	void save_arithmetic(T const& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
 		{
@@ -134,6 +135,8 @@ private:
 	}
 
 	std::unique_ptr<text_oarchive_impl_base>	m_impl;
+
+	friend class serialization::detail::save_dispatch;
 };
 
 }	// namespace serialization

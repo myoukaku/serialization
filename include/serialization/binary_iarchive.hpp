@@ -9,6 +9,7 @@
 #ifndef SERIALIZATION_binary_iarchive_HPP
 #define SERIALIZATION_binary_iarchive_HPP
 
+#include <serialization/detail/load_dispatch.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <memory>
@@ -76,7 +77,7 @@ public:
 	template <typename T>
 	binary_iarchive& operator>>(T& t)
 	{
-		load(t);
+		serialization::detail::load_dispatch::invoke(*this, t);
 		return *this;
 	}
 
@@ -88,12 +89,14 @@ public:
 
 private:
 	template <typename T>
-	void load(T& t)
+	void load_arithmetic(T& t)
 	{
 		m_impl->load(&t, sizeof(T));
 	}
 
 	std::unique_ptr<binary_iarchive_impl_base>	m_impl;
+
+	friend class serialization::detail::load_dispatch;
 };
 
 }	// namespace serialization

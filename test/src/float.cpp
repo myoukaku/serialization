@@ -26,19 +26,21 @@ void FloatTestSub()
 	T const max = std::numeric_limits<T>::max();
 	T const low = std::numeric_limits<T>::lowest();
 	T const inf = std::numeric_limits<T>::infinity();
+	T const inf2 = -std::numeric_limits<T>::infinity();
 	T const nan = std::numeric_limits<T>::quiet_NaN();
+	T const nan2 = -std::numeric_limits<T>::quiet_NaN();
 
 	Stream str;
 	{
 		OArchive oa(str);
-		oa << rnd
-			<< min
-			<< max
-			<< low
-			<< inf
-			<< -inf
-			<< nan
-			<< -nan;
+		oa << serialization::make_nvp("rnd", rnd)
+		   << serialization::make_nvp("min", min)
+		   << serialization::make_nvp("max", max)
+		   << serialization::make_nvp("low", low)
+		   << serialization::make_nvp("inf", inf)
+		   << serialization::make_nvp("inf2", inf2)
+		   << serialization::make_nvp("nan", nan)
+		   << serialization::make_nvp("nan2", nan2);
 	}
 	{
 		T a;
@@ -52,13 +54,21 @@ void FloatTestSub()
 
 		IArchive ia(str);
 
-		ia >> a >> b >> c >> d >> e >> f >> g >> h;
+		ia >> serialization::make_nvp("rnd", a)
+		   >> serialization::make_nvp("min", b)
+		   >> serialization::make_nvp("max", c)
+		   >> serialization::make_nvp("low", d)
+		   >> serialization::make_nvp("inf", e)
+		   >> serialization::make_nvp("inf2", f)
+		   >> serialization::make_nvp("nan", g)
+		   >> serialization::make_nvp("nan2", h);
+
 		EXPECT_EQ(a, rnd);
 		EXPECT_EQ(b, min);
 		EXPECT_EQ(c, max);
 		EXPECT_EQ(d, low);
 		EXPECT_EQ(e, inf);
-		EXPECT_EQ(f, -inf);
+		EXPECT_EQ(f, inf2);
 		EXPECT_TRUE(std::isnan(g));
 		EXPECT_TRUE(std::isnan(h));
 	}

@@ -9,6 +9,7 @@
 #ifndef SERIALIZATION_TEXT_IARCHIVE_HPP
 #define SERIALIZATION_TEXT_IARCHIVE_HPP
 
+#include <serialization/detail/load_dispatch.hpp>
 #include <cstdint>
 #include <memory>
 #include <type_traits>
@@ -97,7 +98,7 @@ public:
 	template <typename T>
 	text_iarchive& operator>>(T& t)
 	{
-		load(t);
+		serialization::detail::load_dispatch::invoke(*this, t);
 		return *this;
 	}
 
@@ -109,7 +110,7 @@ public:
 
 private:
 	template <typename T>
-	void load(T& t)
+	void load_arithmetic(T& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
 		{
@@ -130,6 +131,8 @@ private:
 	}
 
 	std::unique_ptr<text_iarchive_impl_base>	m_impl;
+
+	friend class serialization::detail::load_dispatch;
 };
 
 }	// namespace serialization

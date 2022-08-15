@@ -9,6 +9,7 @@
 #ifndef SERIALIZATION_binary_oarchive_HPP
 #define SERIALIZATION_binary_oarchive_HPP
 
+#include <serialization/detail/save_dispatch.hpp>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -74,7 +75,7 @@ public:
 	template <typename T>
 	binary_oarchive& operator<<(T const& t)
 	{
-		save(t);
+		serialization::detail::save_dispatch::invoke(*this, t);
 		return *this;
 	}
 
@@ -86,12 +87,14 @@ public:
 
 private:
 	template <typename T>
-	void save(T const& t)
+	void save_arithmetic(T const& t)
 	{
 		m_impl->save(&t, sizeof(T));
 	}
 
 	std::unique_ptr<binary_oarchive_impl_base>	m_impl;
+
+	friend class serialization::detail::save_dispatch;
 };
 
 }	// namespace serialization
