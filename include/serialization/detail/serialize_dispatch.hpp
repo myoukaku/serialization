@@ -68,7 +68,7 @@ public:
 	{
 		if constexpr (access::is_serialize_v_invocable<Archive, T>::value)
 		{
-			access::serialize_v(ar, t, version);
+			access::serialize(ar, t, version);
 		}
 		else if constexpr (access::is_serialize_invocable<Archive, T>::value)
 		{

@@ -136,44 +136,32 @@ public:
 		static const bool value = type::value;
 	};
 
-	struct save_v
+	template <typename Archive, typename T>
+	static void save(Archive& ar, T const& t, serialization::version_t version)
 	{
-		template <typename Archive, typename T>
-		static void invoke(Archive& ar, T const& t, serialization::version_t version)
-		{
-			t.save(ar, version);
-		}
-	};
-
-	struct save
-	{
-		template <typename Archive, typename T>
-		static void invoke(Archive& ar, T const& t)
-		{
-			t.save(ar);
-		}
-	};
-
-	struct load_v
-	{
-		template <typename Archive, typename T>
-		static void invoke(Archive& ar, T& t, serialization::version_t version)
-		{
-			t.load(ar, version);
-		}
-	};
-
-	struct load
-	{
-		template <typename Archive, typename T>
-		static void invoke(Archive& ar, T& t)
-		{
-			t.load(ar);
-		}
-	};
+		t.save(ar, version);
+	}
 
 	template <typename Archive, typename T>
-	static void serialize_v(Archive& ar, T const& t, serialization::version_t version)
+	static void save(Archive& ar, T const& t)
+	{
+		t.save(ar);
+	}
+
+	template <typename Archive, typename T>
+	static void load(Archive& ar, T& t, serialization::version_t version)
+	{
+		t.load(ar, version);
+	}
+
+	template <typename Archive, typename T>
+	static void load(Archive& ar, T& t)
+	{
+		t.load(ar);
+	}
+
+	template <typename Archive, typename T>
+	static void serialize(Archive& ar, T const& t, serialization::version_t version)
 	{
 		const_cast<std::remove_const_t<T>&>(t).serialize(ar, version);
 	}

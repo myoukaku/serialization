@@ -68,7 +68,7 @@ private:
 
 		if constexpr (access::is_load_v_invocable<Archive, T>::value)
 		{
-			access::load_v(ar, t, version);
+			access::load(ar, t, version);
 		}
 		else if constexpr (access::is_load_invocable<Archive, T>::value)
 		{

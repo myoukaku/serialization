@@ -68,19 +68,19 @@ private:
 
 		if constexpr (access::is_save_v_invocable<Archive, T>::value)
 		{
-			access::save_version_memfun(ar, t, version);
+			access::save(ar, t, version);
 		}
 		else if constexpr (access::is_save_invocable<Archive, T>::value)
 		{
-			access::save_memfun(ar, t);
+			access::save(ar, t);
 		}
 		else if constexpr (is_save_v_invocable<Archive, T>::value)
 		{
-			save_version_free(ar, t, version);
+			save(ar, t, version);
 		}
 		else if constexpr (is_save_invocable<Archive, T>::value)
 		{
-			save_free(ar, t);
+			save(ar, t);
 		}
 		else
 		{
