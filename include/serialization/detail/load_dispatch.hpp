@@ -18,6 +18,15 @@
 namespace serialization
 {
 
+template <typename Archive, typename T>
+void load_array(Archive& ia, T& t)
+{
+	for (std::size_t i = 0; i < std::extent_v<T>; ++i)
+	{
+		ia >> t[i];
+	}
+}
+
 namespace detail
 {
 
@@ -74,10 +83,7 @@ public:
 	{
 		if constexpr (std::is_array<T>::value)
 		{
-			for (std::size_t i = 0; i < std::extent_v<T>; ++i)
-			{
-				ar >> t[i];
-			}
+			load_array(ar, t);
 		}
 		else if constexpr (std::is_arithmetic_v<T>)
 		{
