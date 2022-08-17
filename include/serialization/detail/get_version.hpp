@@ -10,7 +10,6 @@
 #define SERIALIZATION_GET_VERSION_HPP
 
 #include <serialization/version.hpp>
-#include <serialization/access.hpp>
 
 namespace serialization
 {

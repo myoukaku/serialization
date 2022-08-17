@@ -11,7 +11,6 @@
 
 #include <serialization/detail/serialize_dispatch.hpp>
 #include <serialization/detail/get_version.hpp>
-#include <serialization/access.hpp>
 #include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
@@ -26,37 +25,19 @@ namespace detail
 class save_dispatch
 {
 private:
-	template <typename Archive, typename T>
-	struct is_save_v_invocable
-	{
-	private:
-		template <typename A2, typename T2>
-		static auto test(int) -> decltype(
-			save(std::declval<A2&>(), std::declval<T2 const&>(), std::declval<serialization::version_t>()),
-			std::true_type());
-
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
-
-		using type = decltype(test<Archive, T>(0));
-
-	public:
-		static const bool value = type::value;
-	};
-
-	template <typename Archive, typename T>
+	template <typename... Args>
 	struct is_save_invocable
 	{
 	private:
-		template <typename A2, typename T2>
+		template <typename... Args2>
 		static auto test(int) -> decltype(
-			save(std::declval<A2&>(), std::declval<T2 const&>()),
+			save(std::declval<Args2>()...),
 			std::true_type());
 
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
+		template <typename... Args2>
+		static auto test(...) -> std::false_type;
 
-		using type = decltype(test<Archive, T>(0));
+		using type = decltype(test<Args...>(0));
 
 	public:
 		static const bool value = type::value;
@@ -74,19 +55,11 @@ private:
 			ar << version_nvp;
 		}
 
-		if constexpr (access::is_save_v_invocable<Archive, T>::value)
-		{
-			access::save(ar, t, version);
-		}
-		else if constexpr (access::is_save_invocable<Archive, T>::value)
-		{
-			access::save(ar, t);
-		}
-		else if constexpr (is_save_v_invocable<Archive, T>::value)
+		if constexpr (is_save_invocable<Archive&, T const&, serialization::version_t>::value)
 		{
 			save(ar, t, version);
 		}
-		else if constexpr (is_save_invocable<Archive, T>::value)
+		else if constexpr (is_save_invocable<Archive&, T const&>::value)
 		{
 			save(ar, t);
 		}
@@ -109,11 +82,11 @@ public:
 		}
 		else if constexpr (std::is_arithmetic<T>::value)
 		{
-			ar.save_arithmetic(t);
+			save_arithmetic(ar, t);
 		}
 		else if constexpr (std::is_enum<T>::value)
 		{
-			ar.save_arithmetic(static_cast<std::underlying_type_t<T>>(t));
+			save_arithmetic(ar, static_cast<std::underlying_type_t<T>>(t));
 		}
 		else
 		{

@@ -86,15 +86,14 @@ public:
 	}
 
 private:
-	template <typename T>
-	void save_arithmetic(T const& t)
-	{
-		m_impl->save(&t, sizeof(T));
-	}
-
 	std::unique_ptr<binary_oarchive_impl_base>	m_impl;
 
-	friend class serialization::detail::save_dispatch;
+private:
+	template <typename T>
+	friend void save_arithmetic(binary_oarchive& oa, T const& t)
+	{
+		oa.m_impl->save(&t, sizeof(T));
+	}
 };
 
 }	// namespace serialization

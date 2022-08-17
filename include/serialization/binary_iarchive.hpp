@@ -88,15 +88,14 @@ public:
 	}
 
 private:
-	template <typename T>
-	void load_arithmetic(T& t)
-	{
-		m_impl->load(&t, sizeof(T));
-	}
-
 	std::unique_ptr<binary_iarchive_impl_base>	m_impl;
 
-	friend class serialization::detail::load_dispatch;
+private:
+	template <typename T>
+	friend void load_arithmetic(binary_iarchive& ia, T& t)
+	{
+		ia.m_impl->load(&t, sizeof(T));
+	}
 };
 
 }	// namespace serialization

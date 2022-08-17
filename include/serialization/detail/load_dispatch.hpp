@@ -10,7 +10,6 @@
 #define SERIALIZATION_LOAD_DISPATCH_HPP
 
 #include <serialization/detail/serialize_dispatch.hpp>
-#include <serialization/access.hpp>
 #include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
@@ -25,37 +24,19 @@ namespace detail
 class load_dispatch
 {
 private:
-	template <typename Archive, typename T>
-	struct is_load_v_invocable
-	{
-	private:
-		template <typename A2, typename T2>
-		static auto test(int) -> decltype(
-			load(std::declval<A2&>(), std::declval<T2&>(), std::declval<serialization::version_t>()),
-			std::true_type());
-
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
-
-		using type = decltype(test<Archive, T>(0));
-
-	public:
-		static const bool value = type::value;
-	};
-
-	template <typename Archive, typename T>
+	template <typename... Args>
 	struct is_load_invocable
 	{
 	private:
-		template <typename A2, typename T2>
+		template <typename... Args2>
 		static auto test(int) -> decltype(
-			load(std::declval<A2&>(), std::declval<T2&>()),
+			load(std::declval<Args2>()...),
 			std::true_type());
 
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
+		template <typename... Args2>
+		static auto test(...) -> std::false_type;
 
-		using type = decltype(test<Archive, T>(0));
+		using type = decltype(test<Args...>(0));
 
 	public:
 		static const bool value = type::value;
@@ -73,19 +54,11 @@ private:
 			ar >> version_nvp;
 		}
 
-		if constexpr (access::is_load_v_invocable<Archive, T>::value)
-		{
-			access::load(ar, t, version);
-		}
-		else if constexpr (access::is_load_invocable<Archive, T>::value)
-		{
-			access::load(ar, t);
-		}
-		else if constexpr (is_load_v_invocable<Archive, T>::value)
+		if constexpr (is_load_invocable<Archive&, T&, serialization::version_t>::value)
 		{
 			load(ar, t, version);
 		}
-		else if constexpr (is_load_invocable<Archive, T>::value)
+		else if constexpr (is_load_invocable<Archive&, T&>::value)
 		{
 			load(ar, t);
 		}
@@ -108,12 +81,12 @@ public:
 		}
 		else if constexpr (std::is_arithmetic_v<T>)
 		{
-			ar.load_arithmetic(t);
+			load_arithmetic(ar, t);
 		}
 		else if constexpr (std::is_enum<T>::value)
 		{
 			std::underlying_type_t<T> tmp;
-			ar.load_arithmetic(tmp);
+			load_arithmetic(ar, tmp);
 			t = static_cast<T>(tmp);
 		}
 		else

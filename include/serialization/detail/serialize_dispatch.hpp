@@ -9,7 +9,6 @@
 #ifndef SERIALIZATION_SERIALIZE_DISPATCH_HPP
 #define SERIALIZATION_SERIALIZE_DISPATCH_HPP
 
-#include <serialization/access.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
 #include <utility>
@@ -23,37 +22,19 @@ namespace detail
 class serialize_dispatch
 {
 private:
-	template <typename Archive, typename T>
-	struct is_serialize_v_invocable
-	{
-	private:
-		template <typename A2, typename T2>
-		static auto test(int) -> decltype(
-			serialize(std::declval<A2&>(), std::declval<T2&>(), std::declval<serialization::version_t>()),
-			std::true_type());
-
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
-
-		using type = decltype(test<Archive, T>(0));
-
-	public:
-		static const bool value = type::value;
-	};
-
-	template <typename Archive, typename T>
+	template <typename... Args>
 	struct is_serialize_invocable
 	{
 	private:
-		template <typename A2, typename T2>
+		template <typename... Args2>
 		static auto test(int) -> decltype(
-			serialize(std::declval<A2&>(), std::declval<T2&>()),
+			serialize(std::declval<Args2>()...),
 			std::true_type());
 
-		template <typename A2, typename T2>
-		static auto test(...)->std::false_type;
+		template <typename... Args2>
+		static auto test(...) -> std::false_type;
 
-		using type = decltype(test<Archive, T>(0));
+		using type = decltype(test<Args...>(0));
 
 	public:
 		static const bool value = type::value;
@@ -66,19 +47,11 @@ public:
 	template <typename Archive, typename T>
 	static void invoke(Archive& ar, T const& t, serialization::version_t version)
 	{
-		if constexpr (access::is_serialize_v_invocable<Archive, T>::value)
-		{
-			access::serialize(ar, t, version);
-		}
-		else if constexpr (access::is_serialize_invocable<Archive, T>::value)
-		{
-			access::serialize(ar, t);
-		}
-		else if constexpr (is_serialize_v_invocable<Archive, T>::value)
+		if constexpr (is_serialize_invocable<Archive&, T&, serialization::version_t>::value)
 		{
 			serialize(ar, const_cast<T&>(t), version);
 		}
-		else if constexpr (is_serialize_invocable<Archive, T>::value)
+		else if constexpr (is_serialize_invocable<Archive&, T&>::value)
 		{
 			serialize(ar, const_cast<T&>(t));
 		}

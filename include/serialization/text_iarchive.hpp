@@ -109,30 +109,29 @@ public:
 	}
 
 private:
+	std::unique_ptr<text_iarchive_impl_base>	m_impl;
+
+private:
 	template <typename T>
-	void load_arithmetic(T& t)
+	friend void load_arithmetic(text_iarchive& ia, T& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
 		{
-			m_impl->load(t);
+			ia.m_impl->load(t);
 		}
 		else if constexpr (std::is_unsigned_v<T>)
 		{
 			std::uintmax_t i;
-			m_impl->load(i);
+			ia.m_impl->load(i);
 			t = static_cast<T>(i);
 		}
 		else
 		{
 			std::intmax_t i;
-			m_impl->load(i);
+			ia.m_impl->load(i);
 			t = static_cast<T>(i);
 		}
 	}
-
-	std::unique_ptr<text_iarchive_impl_base>	m_impl;
-
-	friend class serialization::detail::load_dispatch;
 };
 
 }	// namespace serialization

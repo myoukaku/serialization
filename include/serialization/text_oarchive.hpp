@@ -117,26 +117,25 @@ public:
 	}
 
 private:
+	std::unique_ptr<text_oarchive_impl_base>	m_impl;
+
+private:
 	template <typename T>
-	void save_arithmetic(T const& t)
+	friend void save_arithmetic(text_oarchive& oa, T const& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
 		{
-			m_impl->save(t);
+			oa.m_impl->save(t);
 		}
 		else if constexpr (std::is_unsigned_v<T>)
 		{
-			m_impl->save(static_cast<std::uintmax_t>(t));
+			oa.m_impl->save(static_cast<std::uintmax_t>(t));
 		}
 		else
 		{
-			m_impl->save(static_cast<std::intmax_t>(t));
+			oa.m_impl->save(static_cast<std::intmax_t>(t));
 		}
 	}
-
-	std::unique_ptr<text_oarchive_impl_base>	m_impl;
-
-	friend class serialization::detail::save_dispatch;
 };
 
 }	// namespace serialization

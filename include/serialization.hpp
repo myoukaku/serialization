@@ -9,7 +9,6 @@
 #ifndef SERIALIZATION_HPP
 #define SERIALIZATION_HPP
 
-#include <serialization/access.hpp>
 #include <serialization/binary_iarchive.hpp>
 #include <serialization/binary_oarchive.hpp>
 #include <serialization/nvp.hpp>
