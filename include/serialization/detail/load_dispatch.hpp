@@ -11,6 +11,7 @@
 
 #include <serialization/detail/serialize_dispatch.hpp>
 #include <serialization/access.hpp>
+#include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
 #include <utility>
@@ -64,7 +65,13 @@ private:
 	static void load_object(Archive& ar, T& t)
 	{
 		serialization::version_t version;
-		ar >> version;
+
+		// nvp<version_t> を load
+		auto version_nvp = make_nvp("version", version);
+		if constexpr (!std::is_same_v<decltype(version_nvp), T>)	// 無限ループ防止
+		{
+			ar >> version_nvp;
+		}
 
 		if constexpr (access::is_load_v_invocable<Archive, T>::value)
 		{

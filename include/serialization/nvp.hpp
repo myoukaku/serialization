@@ -9,8 +9,6 @@
 #ifndef SERIALIZATION_NVP_HPP
 #define SERIALIZATION_NVP_HPP
 
-#include <serialization/access.hpp>
-
 namespace serialization
 {
 
@@ -23,27 +21,25 @@ public:
 		, m_value(t)
 	{}
 
-	char const* name() const
-	{
-		return m_name;
-	}
+	//char const* name() const
+	//{
+	//	return m_name;
+	//}
 
-	T& value() const
-	{
-		return m_value;
-	}
+	//T& value() const
+	//{
+	//	return m_value;
+	//}
 
 private:
 	char const*		m_name;
 	T&				m_value;
 
 private:
-	friend class serialization::access;
-
 	template <typename Archive>
-	void serialize(Archive& ar)
+	friend void serialize(Archive& ar, nvp<T>& o)
 	{
-		ar & m_value;
+		ar & o.m_value;
 	}
 };
 

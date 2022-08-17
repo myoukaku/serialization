@@ -10,7 +10,9 @@
 #define SERIALIZATION_SAVE_DISPATCH_HPP
 
 #include <serialization/detail/serialize_dispatch.hpp>
+#include <serialization/detail/get_version.hpp>
 #include <serialization/access.hpp>
+#include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
 #include <utility>
@@ -63,8 +65,14 @@ private:
 	template <typename Archive, typename T>
 	static void save_object(Archive& ar, T const& t)
 	{
-		serialization::version_t const version = 0;//detail::Version<T>::value;
-		ar << version;
+		serialization::version_t const version = serialization::detail::get_version(t);
+
+		// nvp<version_t> を save
+		auto version_nvp = make_nvp("version", version);
+		if constexpr (!std::is_same_v<decltype(version_nvp), T>)	// 無限ループ防止
+		{
+			ar << version_nvp;
+		}
 
 		if constexpr (access::is_save_v_invocable<Archive, T>::value)
 		{
