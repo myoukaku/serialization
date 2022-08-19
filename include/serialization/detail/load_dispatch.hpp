@@ -27,6 +27,12 @@ void load_array(Archive& ia, T& t)
 	}
 }
 
+template <typename Archive, typename T>
+void load_nvp(Archive& ia, nvp<T> const& t)
+{
+	ia >> t.value();
+}
+
 namespace detail
 {
 
@@ -56,12 +62,8 @@ private:
 	{
 		serialization::version_t version;
 
-		// nvp<version_t> を load
-		auto version_nvp = make_nvp("version", version);
-		if constexpr (!std::is_same_v<decltype(version_nvp), T>)	// 無限ループ防止
-		{
-			ar >> version_nvp;
-		}
+		// version_t を load
+		ar >> make_nvp("version", version);
 
 		if constexpr (is_load_invocable<Archive&, T&, serialization::version_t>::value)
 		{
@@ -85,7 +87,7 @@ public:
 		{
 			load_array(ar, t);
 		}
-		else if constexpr (std::is_arithmetic_v<T>)
+		else if constexpr (std::is_arithmetic<T>::value)
 		{
 			load_arithmetic(ar, t);
 		}
@@ -94,6 +96,10 @@ public:
 			std::underlying_type_t<T> tmp;
 			load_arithmetic(ar, tmp);
 			t = static_cast<T>(tmp);
+		}
+		else if constexpr (is_nvp<T>::value)
+		{
+			load_nvp(ar, t);
 		}
 		else
 		{

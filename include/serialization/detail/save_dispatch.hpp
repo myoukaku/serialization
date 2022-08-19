@@ -28,6 +28,12 @@ void save_array(Archive& oa, T const& t)
 	}
 }
 
+template <typename Archive, typename T>
+void save_nvp(Archive& oa, nvp<T> const& t)
+{
+	oa << t.value();
+}
+
 namespace detail
 {
 
@@ -57,12 +63,8 @@ private:
 	{
 		serialization::version_t const version = serialization::detail::get_version(t);
 
-		// nvp<version_t> を save
-		auto version_nvp = make_nvp("version", version);
-		if constexpr (!std::is_same_v<decltype(version_nvp), T>)	// 無限ループ防止
-		{
-			ar << version_nvp;
-		}
+		// version_t を save
+		ar << make_nvp("version", version);
 
 		if constexpr (is_save_invocable<Archive&, T const&, serialization::version_t>::value)
 		{
@@ -93,6 +95,10 @@ public:
 		else if constexpr (std::is_enum<T>::value)
 		{
 			save_arithmetic(ar, static_cast<std::underlying_type_t<T>>(t));
+		}
+		else if constexpr (is_nvp<T>::value)
+		{
+			save_nvp(ar, t);
 		}
 		else
 		{

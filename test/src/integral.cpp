@@ -29,7 +29,10 @@ void IntegralTestSub()
 	Stream str;
 	{
 		OArchive oa(str);
-		oa << rnd << min << max << low;
+		oa << serialization::make_nvp("rnd", rnd)
+		   << serialization::make_nvp("min", min)
+		   << serialization::make_nvp("max", max)
+		   << serialization::make_nvp("low", low);
 	}
 	{
 		T a;
@@ -39,7 +42,11 @@ void IntegralTestSub()
 
 		IArchive ia(str);
 
-		ia >> a >> b >> c >> d;
+		ia >> serialization::make_nvp("rnd", a)
+		   >> serialization::make_nvp("min", b)
+		   >> serialization::make_nvp("max", c)
+		   >> serialization::make_nvp("low", d);
+
 		EXPECT_EQ(a, rnd);
 		EXPECT_EQ(b, min);
 		EXPECT_EQ(c, max);
@@ -48,7 +55,7 @@ void IntegralTestSub()
 }
 
 template <typename Stream, typename OArchive, typename IArchive>
-void IntegralTest2()
+void IntegralTest()
 {
 	IntegralTestSub<Stream, OArchive, IArchive, bool>();
 	IntegralTestSub<Stream, OArchive, IArchive, char>();
@@ -68,20 +75,25 @@ void IntegralTest2()
 	IntegralTestSub<Stream, OArchive, IArchive, char32_t>();
 }
 
-template <typename OArchive, typename IArchive>
-void IntegralTest()
-{
-	IntegralTest2<std::stringstream,  OArchive, IArchive>();
-	IntegralTest2<std::wstringstream, OArchive, IArchive>();
-}
-
 GTEST_TEST(SerializationTest, IntegralTest)
 {
 	IntegralTest<
+		std::stringstream,
 		serialization::text_oarchive,
 		serialization::text_iarchive
 	>();
 	IntegralTest<
+		std::wstringstream,
+		serialization::text_oarchive,
+		serialization::text_iarchive
+	>();
+	IntegralTest<
+		std::stringstream,
+		serialization::binary_oarchive,
+		serialization::binary_iarchive
+	>();
+	IntegralTest<
+		std::wstringstream,
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();

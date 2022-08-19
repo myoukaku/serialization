@@ -9,6 +9,8 @@
 #ifndef SERIALIZATION_NVP_HPP
 #define SERIALIZATION_NVP_HPP
 
+#include <type_traits>
+
 namespace serialization
 {
 
@@ -21,26 +23,19 @@ public:
 		, m_value(t)
 	{}
 
-	//char const* name() const
-	//{
-	//	return m_name;
-	//}
+	char const* name() const
+	{
+		return m_name;
+	}
 
-	//T& value() const
-	//{
-	//	return m_value;
-	//}
+	T& value() const
+	{
+		return m_value;
+	}
 
 private:
 	char const*		m_name;
 	T&				m_value;
-
-private:
-	template <typename Archive>
-	friend void serialize(Archive& ar, nvp<T>& o)
-	{
-		ar & o.m_value;
-	}
 };
 
 template <typename T>
@@ -49,6 +44,21 @@ make_nvp(char const* name, T& t)
 {
 	return nvp<T>(name, t);
 }
+
+template <typename T>
+struct is_nvp : public std::false_type {};
+
+template <typename T>
+struct is_nvp<nvp<T>> : public std::true_type {};
+
+template <typename T>
+struct is_nvp<nvp<T> const> : public std::true_type {};
+
+template <typename T>
+struct is_nvp<nvp<T> volatile> : public std::true_type {};
+
+template <typename T>
+struct is_nvp<nvp<T> const volatile> : public std::true_type {};
 
 }	// namespace serialization
 
