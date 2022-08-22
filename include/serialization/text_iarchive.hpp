@@ -14,6 +14,7 @@
 #include <memory>
 #include <type_traits>
 #include <charconv>
+#include <iomanip>
 
 #pragma warning(disable : 4244)
 
@@ -32,7 +33,73 @@ public:
 	virtual void load(float&) = 0;
 	virtual void load(double&) = 0;
 	virtual void load(long double&) = 0;
+	virtual void load(std::string&) = 0;
+	virtual void load(std::wstring&) = 0;
 };
+
+template <typename CharT, typename Traits>
+inline void input_string(
+	std::basic_istream<CharT, Traits>& is,
+	std::basic_string<CharT, Traits>& s)
+{
+	is >> std::quoted(s);
+}
+
+inline void input_string(
+	std::basic_istream<char>& is,
+	std::basic_string<wchar_t>& s)
+{
+	char c;
+	is >> c;
+	for (;;)
+	{
+		is >> c;
+		if (c == '"')
+		{
+			break;
+		}
+		if (c == '\\')
+		{
+			is >> c;
+			continue;
+		}
+
+		char buf[5]{};
+		buf[0] = c;
+		is >> buf[1];
+		is >> buf[2];
+		is >> buf[3];
+		auto ul = std::strtoul(buf, nullptr, 16);
+		s += (wchar_t)(ul);
+	}
+}
+
+inline void input_string(
+	std::basic_istream<wchar_t>& is,
+	std::basic_string<char>& s)
+{
+	wchar_t wc;
+	is >> wc;
+	for (;;)
+	{
+		is >> wc;
+		if (wc == L'"')
+		{
+			break;
+		}
+		if (wc == L'\\')
+		{
+			is >> wc;
+			continue;
+		}
+
+		wchar_t buf[3]{};
+		buf[0] = wc;
+		is >> buf[1];
+		auto ul = std::wcstoul(buf, nullptr, 16);
+		s += (char)(ul);
+	}
+}
 
 template <typename IStream>
 class text_iarchive_impl
@@ -68,6 +135,16 @@ public:
 	void load(long double& t) override
 	{
 		load_float(t);
+	}
+
+	void load(std::string& t) override
+	{
+		input_string(m_is, t);
+	}
+
+	void load(std::wstring& t) override
+	{
+		input_string(m_is, t);
 	}
 
 private:
@@ -131,6 +208,12 @@ private:
 			ia.m_impl->load(i);
 			t = static_cast<T>(i);
 		}
+	}
+
+	template <typename CharT>
+	friend void load_string(text_iarchive& ia, std::basic_string<CharT>& t)
+	{
+		ia.m_impl->load(t);
 	}
 };
 

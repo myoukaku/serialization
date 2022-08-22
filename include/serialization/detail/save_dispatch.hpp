@@ -11,12 +11,16 @@
 
 #include <serialization/detail/serialize_dispatch.hpp>
 #include <serialization/detail/get_version.hpp>
+#include <serialization/detail/has_adl_save.hpp>
 #include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
 #include <utility>
 
 namespace serialization
+{
+
+namespace detail
 {
 
 template <typename Archive, typename T>
@@ -29,57 +33,29 @@ void save_array(Archive& oa, T const& t)
 }
 
 template <typename Archive, typename T>
-void save_nvp(Archive& oa, nvp<T> const& t)
+void save_object(Archive& ar, T const& t)
 {
-	oa << t.value();
-}
+	serialization::version_t const version = serialization::detail::get_version(t);
 
-namespace detail
-{
+	// version_t を save
+	ar << make_nvp("version", version);
+
+	if constexpr (has_adl_save<Archive&, T const&, serialization::version_t>::value)
+	{
+		save(ar, t, version);
+	}
+	else if constexpr (has_adl_save<Archive&, T const&>::value)
+	{
+		save(ar, t);
+	}
+	else
+	{
+		serialize_dispatch::invoke(ar, t, version);
+	}
+}
 
 class save_dispatch
 {
-private:
-	template <typename... Args>
-	struct is_save_invocable
-	{
-	private:
-		template <typename... Args2>
-		static auto test(int) -> decltype(
-			save(std::declval<Args2>()...),
-			std::true_type());
-
-		template <typename... Args2>
-		static auto test(...) -> std::false_type;
-
-		using type = decltype(test<Args...>(0));
-
-	public:
-		static const bool value = type::value;
-	};
-
-	template <typename Archive, typename T>
-	static void save_object(Archive& ar, T const& t)
-	{
-		serialization::version_t const version = serialization::detail::get_version(t);
-
-		// version_t を save
-		ar << make_nvp("version", version);
-
-		if constexpr (is_save_invocable<Archive&, T const&, serialization::version_t>::value)
-		{
-			save(ar, t, version);
-		}
-		else if constexpr (is_save_invocable<Archive&, T const&>::value)
-		{
-			save(ar, t);
-		}
-		else
-		{
-			serialize_dispatch::invoke(ar, t, version);
-		}
-	}
-
 public:
 	template <typename Archive, typename T>
 	static void invoke(Archive& ar, T const& t)
@@ -95,10 +71,6 @@ public:
 		else if constexpr (std::is_enum<T>::value)
 		{
 			save_arithmetic(ar, static_cast<std::underlying_type_t<T>>(t));
-		}
-		else if constexpr (is_nvp<T>::value)
-		{
-			save_nvp(ar, t);
 		}
 		else
 		{

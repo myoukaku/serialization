@@ -13,6 +13,7 @@
 #include <serialization/binary_iarchive.hpp>
 #include <serialization/binary_oarchive.hpp>
 #include <serialization/nvp.hpp>
+#include <serialization/string.hpp>
 #include <serialization/text_iarchive.hpp>
 #include <serialization/text_oarchive.hpp>
 #include <serialization/version.hpp>

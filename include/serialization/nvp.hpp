@@ -36,6 +36,19 @@ public:
 private:
 	char const*		m_name;
 	T&				m_value;
+
+private:
+	template <typename Archive>
+	friend void save_object(Archive& oa, nvp<T> const& t)
+	{
+		oa << t.value();
+	}
+
+	template <typename Archive>
+	friend void load_object(Archive& ia, nvp<T> const& t)
+	{
+		ia >> t.value();
+	}
 };
 
 template <typename T>
@@ -44,21 +57,6 @@ make_nvp(char const* name, T& t)
 {
 	return nvp<T>(name, t);
 }
-
-template <typename T>
-struct is_nvp : public std::false_type {};
-
-template <typename T>
-struct is_nvp<nvp<T>> : public std::true_type {};
-
-template <typename T>
-struct is_nvp<nvp<T> const> : public std::true_type {};
-
-template <typename T>
-struct is_nvp<nvp<T> volatile> : public std::true_type {};
-
-template <typename T>
-struct is_nvp<nvp<T> const volatile> : public std::true_type {};
 
 }	// namespace serialization
 

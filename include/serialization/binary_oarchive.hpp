@@ -94,6 +94,14 @@ private:
 	{
 		oa.m_impl->save(&t, sizeof(T));
 	}
+
+	template <typename CharT>
+	friend void save_string(binary_oarchive& oa, std::basic_string<CharT> const& t)
+	{
+		std::size_t const len = t.length();
+		oa.m_impl->save(&len, sizeof(len));
+		oa.m_impl->save(t.data(), len * sizeof(CharT));
+	}
 };
 
 }	// namespace serialization

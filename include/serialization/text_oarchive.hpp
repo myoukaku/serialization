@@ -16,6 +16,8 @@
 #include <ios>		// std::scientific
 #include <iomanip>	// std::setprecision
 #include <array>
+#include <string>
+#include <iomanip>
 
 namespace serialization
 {
@@ -31,15 +33,55 @@ public:
 	virtual void save(float) = 0;
 	virtual void save(double) = 0;
 	virtual void save(long double) = 0;
+	virtual void save(std::string const&) = 0;
+	virtual void save(std::wstring const&) = 0;
 };
+
+template <typename CharT, typename Traits>
+inline void ouput_string(
+	std::basic_ostream<CharT, Traits>& os,
+	std::basic_string<CharT, Traits> const& s)
+{
+	os << std::quoted(s);
+}
+
+inline void ouput_string(
+	std::basic_ostream<char>& os,
+	std::basic_string<wchar_t> const& s)
+{
+	os << "\"";
+	auto const old_flags = os.flags();
+	os << std::hex;
+	for (auto c : s)
+	{
+		os << "\\x";
+		os << std::right << std::setw(4) << std::setfill('0') << std::uint16_t(c);
+	}
+	os.flags(old_flags);
+	os << "\"";
+}
+
+inline void ouput_string(
+	std::basic_ostream<wchar_t>& os,
+	std::basic_string<char> const& s)
+{
+	os << "\"";
+	auto const old_flags = os.flags();
+	os << std::hex;
+	for (auto c : s)
+	{
+		os << "\\x";
+		os << std::right << std::setw(2) << std::setfill(L'0') << std::uint8_t(c);
+	}
+	os.flags(old_flags);
+	os << "\"";
+}
 
 template <typename OStream>
 class text_oarchive_impl
 	: public text_oarchive_impl_base
 {
 public:
-	using char_type = typename OStream::char_type;
-
 	explicit text_oarchive_impl(OStream& os)
 		: m_os(os)
 	{}
@@ -67,6 +109,18 @@ public:
 	void save(long double t) override
 	{
 		save_float(t);
+	}
+
+	void save(std::string const& t) override
+	{
+		ouput_string(m_os, t);
+		m_os << " ";
+	}
+
+	void save(std::wstring const& t) override
+	{
+		ouput_string(m_os, t);
+		m_os << " ";
 	}
 
 private:
@@ -135,6 +189,12 @@ private:
 		{
 			oa.m_impl->save(static_cast<std::intmax_t>(t));
 		}
+	}
+
+	template <typename CharT>
+	friend void save_string(text_oarchive& oa, std::basic_string<CharT> const& t)
+	{
+		oa.m_impl->save(t);
 	}
 };
 

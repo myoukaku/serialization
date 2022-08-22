@@ -15,6 +15,7 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
+#include <string>
 
 namespace serialization
 {
@@ -95,6 +96,16 @@ private:
 	friend void load_arithmetic(binary_iarchive& ia, T& t)
 	{
 		ia.m_impl->load(&t, sizeof(T));
+	}
+
+	template <typename CharT>
+	friend void load_string(binary_iarchive& ia, std::basic_string<CharT>& t)
+	{
+		std::size_t len;
+		ia.m_impl->load(&len, sizeof(len));
+
+		t.resize(len);
+		ia.m_impl->load(t.data(), len * sizeof(CharT));
 	}
 };
 

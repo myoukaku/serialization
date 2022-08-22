@@ -10,12 +10,16 @@
 #define SERIALIZATION_LOAD_DISPATCH_HPP
 
 #include <serialization/detail/serialize_dispatch.hpp>
+#include <serialization/detail/has_adl_load.hpp>
 #include <serialization/nvp.hpp>
 #include <serialization/version.hpp>
 #include <type_traits>
 #include <utility>
 
 namespace serialization
+{
+
+namespace detail
 {
 
 template <typename Archive, typename T>
@@ -28,57 +32,29 @@ void load_array(Archive& ia, T& t)
 }
 
 template <typename Archive, typename T>
-void load_nvp(Archive& ia, nvp<T> const& t)
+void load_object(Archive& ar, T& t)
 {
-	ia >> t.value();
-}
+	serialization::version_t version;
 
-namespace detail
-{
+	// version_t を load
+	ar >> make_nvp("version", version);
+
+	if constexpr (has_adl_load<Archive&, T&, serialization::version_t>::value)
+	{
+		load(ar, t, version);
+	}
+	else if constexpr (has_adl_load<Archive&, T&>::value)
+	{
+		load(ar, t);
+	}
+	else
+	{
+		serialize_dispatch::invoke(ar, t, version);
+	}
+}
 
 class load_dispatch
 {
-private:
-	template <typename... Args>
-	struct is_load_invocable
-	{
-	private:
-		template <typename... Args2>
-		static auto test(int) -> decltype(
-			load(std::declval<Args2>()...),
-			std::true_type());
-
-		template <typename... Args2>
-		static auto test(...) -> std::false_type;
-
-		using type = decltype(test<Args...>(0));
-
-	public:
-		static const bool value = type::value;
-	};
-
-	template <typename Archive, typename T>
-	static void load_object(Archive& ar, T& t)
-	{
-		serialization::version_t version;
-
-		// version_t を load
-		ar >> make_nvp("version", version);
-
-		if constexpr (is_load_invocable<Archive&, T&, serialization::version_t>::value)
-		{
-			load(ar, t, version);
-		}
-		else if constexpr (is_load_invocable<Archive&, T&>::value)
-		{
-			load(ar, t);
-		}
-		else
-		{
-			serialize_dispatch::invoke(ar, t, version);
-		}
-	}
-
 public:
 	template <typename Archive, typename T>
 	static void invoke(Archive& ar, T& t)
@@ -96,10 +72,6 @@ public:
 			std::underlying_type_t<T> tmp;
 			load_arithmetic(ar, tmp);
 			t = static_cast<T>(tmp);
-		}
-		else if constexpr (is_nvp<T>::value)
-		{
-			load_nvp(ar, t);
 		}
 		else
 		{
