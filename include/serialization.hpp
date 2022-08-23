@@ -16,6 +16,7 @@
 #include <serialization/string.hpp>
 #include <serialization/text_iarchive.hpp>
 #include <serialization/text_oarchive.hpp>
+#include <serialization/unique_ptr.hpp>
 #include <serialization/version.hpp>
 
 #endif // SERIALIZATION_HPP

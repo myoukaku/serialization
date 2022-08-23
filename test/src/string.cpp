@@ -24,10 +24,10 @@ void StringTest()
 {
 	std::string  s1_1;
 	std::string  s1_2 = "Hello World";
-	std::string  s1_3 = "\r\n\t\"\\\v\bABCDE\u3042\u3044\u3046";
+	std::string  s1_3 = "0123 abcde \r\n\t\"\\\v\bABCDE\u3042\u3044\u3046";
 	std::wstring ws1_1;
 	std::wstring ws1_2 = L"Hello World";
-	std::wstring ws1_3 = L"\r\n\t\"\\\v\bABCDE\u3042\u3044\u3046";
+	std::wstring ws1_3 = L"0123 abcde \r\n\t\"\\\v\bABCDE\u3042\u3044\u3046";
 
 	Stream str;
 	{
