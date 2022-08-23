@@ -10,6 +10,8 @@
 #define SERIALIZATION_UNIQUE_PTR_HPP
 
 #include <serialization/nvp.hpp>
+#include <serialization/detail/get_class_name.hpp>
+#include <serialization/detail/class_table.hpp>
 #include <memory>
 
 namespace serialization
@@ -22,6 +24,8 @@ void save(Archive& oa, std::unique_ptr<T> const& t)
 	oa << make_nvp("has_value", has_value);
 	if (has_value)
 	{
+		std::string s = detail::get_class_name(*t);
+		oa << make_nvp("class_id", s);
 		oa << make_nvp("value", *t);
 	}
 }
@@ -33,7 +37,10 @@ void load(Archive& ia, std::unique_ptr<T>& t)
 	ia >> make_nvp("has_value", has_value);
 	if (has_value)
 	{
-		auto p = new T;
+		std::string s;
+		ia >> make_nvp("class_id", s);
+
+		auto p = detail::class_table::get_instance().construct<T>(s);
 		ia >> make_nvp("value", *p);
 		t.reset(p);
 	}

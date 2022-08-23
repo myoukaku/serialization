@@ -47,6 +47,26 @@ inline T get_random_value()
 	}
 }
 
+template <typename T>
+inline T get_random_value(T min, T max)
+{
+	if constexpr (std::is_floating_point_v<T>)
+	{
+		std::uniform_real_distribution<T> dist(min, max);
+		return dist(get_random_engine());
+	}
+	else if constexpr (std::is_unsigned_v<T>)
+	{
+		std::uniform_int_distribution<std::uintmax_t> dist(min, max);
+		return dist(get_random_engine());
+	}
+	else
+	{
+		std::uniform_int_distribution<std::intmax_t> dist(min, max);
+		return dist(get_random_engine());
+	}
+}
+
 }	// namespace
 
 #endif // SERIALIZATION_TEST_UTILITY_HPP
