@@ -11,7 +11,8 @@
 
 #include <serialization/nvp.hpp>
 #include <serialization/detail/get_class_name.hpp>
-#include <serialization/detail/class_table.hpp>
+#include <serialization/detail/pointer_saver.hpp>
+#include <serialization/detail/pointer_loader.hpp>
 #include <memory>
 
 namespace serialization
@@ -26,7 +27,7 @@ void save(Archive& oa, std::unique_ptr<T> const& t)
 	{
 		std::string s = detail::get_class_name(*t);
 		oa << make_nvp("class_id", s);
-		oa << make_nvp("value", *t);
+		detail::pointer_saver<Archive>::get_instance().save_ptr<T>(oa, s, t.get());
 	}
 }
 
@@ -40,8 +41,7 @@ void load(Archive& ia, std::unique_ptr<T>& t)
 		std::string s;
 		ia >> make_nvp("class_id", s);
 
-		auto p = detail::class_table::get_instance().construct<T>(s);
-		ia >> make_nvp("value", *p);
+		auto p = detail::pointer_loader<Archive>::get_instance().load_ptr<T>(ia, s);
 		t.reset(p);
 	}
 }

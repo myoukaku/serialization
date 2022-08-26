@@ -36,9 +36,8 @@ private:
 	}
 
 public:
-    friend const char* static_class_name(Base const*) { return "Base"; }
-    virtual const char* get_class_name() const { return static_class_name(this); }
-    inline static serialization::detail::class_exporter<Base> reg;
+	static const char* static_class_name() { return "Base"; }
+	virtual const char* get_class_name() const { return static_class_name(); }
 };
 
 class Derived : public Base
@@ -61,30 +60,42 @@ private:
 	}
 
 public:
-    friend const char* static_class_name(Derived const*) { return "Derived"; }
-    virtual const char* get_class_name() const { return static_class_name(this); }
-    inline static serialization::detail::class_exporter<Derived> reg;
+	static const char* static_class_name() { return "Derived"; }
+	virtual const char* get_class_name() const { return static_class_name(); }
 };
 
+static serialization::class_exporter<
+	Derived, serialization::text_oarchive, serialization::text_iarchive
+> dummy1{};
+
+static serialization::class_exporter<
+	Derived, serialization::binary_oarchive, serialization::binary_iarchive
+> dummy2{};
 
 template <typename Stream, typename OArchive, typename IArchive>
 void UniquePtrPolymorphicTest()
 {
+	std::unique_ptr<Base>    p1(new Base());
 	std::unique_ptr<Base>    p2(new Derived());
+	std::unique_ptr<Derived> p3(new Derived());
 
 	Stream str;
 	{
 		OArchive oa(str);
-		oa << p2;
+		oa << p1 << p2 << p3;
 	}
 	{
+		std::unique_ptr<Base>    a;
 		std::unique_ptr<Base>    b;
+		std::unique_ptr<Derived> c;
 
 		IArchive ia(str);
 
-		ia >> b;
+		ia >> a >> b >> c;
 
+		EXPECT_EQ(p1->GetValue(), a->GetValue());
 		EXPECT_EQ(p2->GetValue(), b->GetValue());
+		EXPECT_EQ(p3->GetValue(), c->GetValue());
 	}
 }
 
@@ -105,11 +116,11 @@ GTEST_TEST(SerializationTest, UniquePtrPolymorphicTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
-	UniquePtrPolymorphicTest<
-		std::wstringstream,
-		serialization::binary_oarchive,
-		serialization::binary_iarchive
-	>();
+	//UniquePtrPolymorphicTest<
+	//	std::wstringstream,
+	//	serialization::binary_oarchive,
+	//	serialization::binary_iarchive
+	//>();
 }
 
 }	// namespace unique_ptr_polymorphic_test
