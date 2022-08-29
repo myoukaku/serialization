@@ -20,5 +20,6 @@
 #include <serialization/text_oarchive.hpp>
 #include <serialization/unique_ptr.hpp>
 #include <serialization/version.hpp>
+#include <serialization/weak_ptr.hpp>
 
 #endif // SERIALIZATION_HPP
