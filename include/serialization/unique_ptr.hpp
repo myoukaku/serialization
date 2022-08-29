@@ -27,7 +27,7 @@ void save(Archive& oa, std::unique_ptr<T> const& t)
 	{
 		std::string s = detail::get_class_name(*t);
 		oa << make_nvp("class_id", s);
-		detail::pointer_saver<Archive>::get_instance().save_ptr<T>(oa, s, t.get());
+		detail::pointer_saver<Archive>::get_instance().save_ptr(oa, s, t.get());
 	}
 }
 
@@ -45,6 +45,12 @@ void load(Archive& ia, std::unique_ptr<T>& t)
 		t.reset(p);
 	}
 }
+
+template <typename Archive, typename T>
+void save(Archive& oa, std::unique_ptr<T[]> const& t) = delete;
+
+template <typename Archive, typename T>
+void load(Archive& ia, std::unique_ptr<T[]>& t) = delete;
 
 }	// namespace serialization
 

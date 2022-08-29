@@ -1,5 +1,5 @@
 ﻿/**
- *	@file	unique_ptr_polymorphic.cpp
+ *	@file	unique_ptr_polymorphic_version.cpp
  *
  *	@brief
  *
@@ -15,7 +15,7 @@
 namespace serialization_test
 {
 
-namespace unique_ptr_polymorphic_test
+namespace unique_ptr_polymorphic_version_test
 {
 
 class Base
@@ -30,13 +30,19 @@ private:
 
 private:
 	template <typename Archive>
-	friend void serialize(Archive& ar, Base& o)
+	friend void serialize(Archive& ar, Base& o, serialization::version_t version)
 	{
+		EXPECT_EQ(3u, version);
 		ar & o.a;
 	}
 
+	friend constexpr serialization::version_t get_version(Base const&)
+	{
+		return 3;
+	}
+
 public:
-	static const char* static_class_name() { return "unique_ptr_polymorphic_test::Base"; }
+	static const char* static_class_name() { return "unique_ptr_polymorphic_version_test::Base"; }
 	virtual const char* get_class_name() const { return static_class_name(); }
 };
 
@@ -53,14 +59,20 @@ private:
 
 private:
 	template <typename Archive>
-	friend void serialize(Archive& ar, Derived& o)
+	friend void serialize(Archive& ar, Derived& o, serialization::version_t version)
 	{
+		EXPECT_EQ(2u, version);
 		ar & serialization::base_object<Base>(o);
 		ar & o.b;
 	}
 
+	friend constexpr serialization::version_t get_version(Derived const&)
+	{
+		return 2;
+	}
+
 public:
-	static const char* static_class_name() { return "unique_ptr_polymorphic_test::Derived"; }
+	static const char* static_class_name() { return "unique_ptr_polymorphic_version_test::Derived"; }
 	virtual const char* get_class_name() const { return static_class_name(); }
 };
 
@@ -73,7 +85,7 @@ static const serialization::class_exporter<
 > dummy2{};
 
 template <typename Stream, typename OArchive, typename IArchive>
-void UniquePtrPolymorphicTest()
+void UniquePtrPolymorphicVersionTest()
 {
 	std::unique_ptr<Base>    p1(new Base());
 	std::unique_ptr<Base>    p2(new Derived());
@@ -99,30 +111,30 @@ void UniquePtrPolymorphicTest()
 	}
 }
 
-GTEST_TEST(SerializationTest, UniquePtrPolymorphicTest)
+GTEST_TEST(SerializationTest, UniquePtrPolymorphicVersionTest)
 {
-	UniquePtrPolymorphicTest<
+	UniquePtrPolymorphicVersionTest<
 		std::stringstream,
 		serialization::text_oarchive,
 		serialization::text_iarchive
 	>();
-	UniquePtrPolymorphicTest<
+	UniquePtrPolymorphicVersionTest<
 		std::wstringstream,
 		serialization::text_oarchive,
 		serialization::text_iarchive
 	>();
-	UniquePtrPolymorphicTest<
+	UniquePtrPolymorphicVersionTest<
 		std::stringstream,
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
-	//UniquePtrPolymorphicTest<
+	//UniquePtrPolymorphicVersionTest<
 	//	std::wstringstream,
 	//	serialization::binary_oarchive,
 	//	serialization::binary_iarchive
 	//>();
 }
 
-}	// namespace unique_ptr_polymorphic_test
+}	// namespace unique_ptr_polymorphic_version_test
 
 }	// namespace serialization_test

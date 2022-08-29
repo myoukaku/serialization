@@ -33,9 +33,9 @@ private:
 	template <typename T>
 	struct save_func
 	{
-		void operator()(Archive& oa, void* p) const
+		void operator()(Archive& oa, void const* p) const
 		{
-			oa << make_nvp("value", *((T const*)p));
+			oa << make_nvp("value", *(static_cast<T const*>(p)));
 		}
 	};
 
@@ -48,7 +48,7 @@ public:
 	}
 
 	template <typename T>
-	void save_ptr(Archive& oa, std::string const& name, void* p)
+	void save_ptr(Archive& oa, std::string const& name, T const* p)
 	{
 		if (m_f.find(name) != m_f.end())
 		{
@@ -64,7 +64,7 @@ private:
 	{
 	}
 
-	std::map<std::string, std::function<void(Archive&, void*)>> m_f;
+	std::map<std::string, std::function<void(Archive&, void const*)>> m_f;
 };
 
 }	// namespace detail
