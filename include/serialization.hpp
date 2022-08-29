@@ -14,6 +14,7 @@
 #include <serialization/binary_oarchive.hpp>
 #include <serialization/export.hpp>
 #include <serialization/nvp.hpp>
+#include <serialization/shared_ptr.hpp>
 #include <serialization/string.hpp>
 #include <serialization/text_iarchive.hpp>
 #include <serialization/text_oarchive.hpp>
