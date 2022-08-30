@@ -10,6 +10,7 @@
 #define SERIALIZATION_TEXT_OARCHIVE_HPP
 
 #include <serialization/detail/save_dispatch.hpp>
+#include <serialization/detail/shared_ptr_table.hpp>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -148,7 +149,7 @@ private:
 	OStream&	m_os;
 };
 
-class text_oarchive
+class text_oarchive : public detail::shared_ptr_table
 {
 public:
 	template <typename OStream>

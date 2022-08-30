@@ -10,6 +10,7 @@
 #define SERIALIZATION_binary_iarchive_HPP
 
 #include <serialization/detail/load_dispatch.hpp>
+#include <serialization/detail/shared_ptr_table.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <memory>
@@ -66,7 +67,7 @@ private:
 	IStream&	m_is;
 };
 
-class binary_iarchive
+class binary_iarchive : public detail::shared_ptr_table
 {
 public:
 	template <typename IStream>
