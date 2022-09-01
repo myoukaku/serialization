@@ -29,6 +29,7 @@ public:
 	{
 	}
 
+	virtual void load(bool&) = 0;
 	virtual void load(std::intmax_t&) = 0;
 	virtual void load(std::uintmax_t&) = 0;
 	virtual void load(float&) = 0;
@@ -36,17 +37,18 @@ public:
 	virtual void load(long double&) = 0;
 	virtual void load(std::string&) = 0;
 	virtual void load(std::wstring&) = 0;
+	virtual void input(std::string&) = 0;
 };
 
 template <typename CharT, typename Traits>
-inline void input_string(
+inline void input_quoted_string(
 	std::basic_istream<CharT, Traits>& is,
 	std::basic_string<CharT, Traits>& s)
 {
 	is >> std::quoted(s);
 }
 
-inline void input_string(
+inline void input_quoted_string(
 	std::basic_istream<char>& is,
 	std::basic_string<wchar_t>& s)
 {
@@ -75,7 +77,7 @@ inline void input_string(
 	}
 }
 
-inline void input_string(
+inline void input_quoted_string(
 	std::basic_istream<wchar_t>& is,
 	std::basic_string<char>& s)
 {
@@ -113,6 +115,11 @@ public:
 		: m_is(is)
 	{}
 
+	void load(bool& t) override
+	{
+		m_is >> std::boolalpha >> t;
+	}
+
 	void load(std::intmax_t& t) override
 	{
 		m_is >> t;
@@ -140,12 +147,19 @@ public:
 
 	void load(std::string& t) override
 	{
-		input_string(m_is, t);
+		input_quoted_string(m_is, t);
 	}
 
 	void load(std::wstring& t) override
 	{
-		input_string(m_is, t);
+		input_quoted_string(m_is, t);
+	}
+
+	void input(std::string& s) override
+	{
+		std::basic_string<char_type> tmp;
+		m_is >> tmp;
+		s = std::string(tmp.begin(), tmp.end());
 	}
 
 private:
@@ -155,7 +169,10 @@ private:
 		std::basic_string<char_type> tmp;
 		m_is >> tmp;
 		std::string s(tmp.begin(), tmp.end());
-		std::from_chars(s.data(), s.data() + s.length(), t);
+		auto first = s.data();
+		auto last  = s.data() + s.length();
+		auto result = std::from_chars(first, last, t);
+		m_is.seekg(result.ptr - last, std::ios_base::cur);	// 変換できなかったぶん戻す
 	}
 
 private:
@@ -186,6 +203,12 @@ public:
 		return *this >> t;
 	}
 
+protected:
+	void input(std::string& s)
+	{
+		m_impl->input(s);
+	}
+
 private:
 	std::unique_ptr<text_iarchive_impl_base>	m_impl;
 
@@ -194,6 +217,10 @@ private:
 	friend void load_arithmetic(text_iarchive& ia, T& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
+		{
+			ia.m_impl->load(t);
+		}
+		else if constexpr (std::is_same_v<T, bool>)
 		{
 			ia.m_impl->load(t);
 		}

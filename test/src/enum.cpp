@@ -95,6 +95,10 @@ GTEST_TEST(SerializationTest, EnumTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	EnumTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace enum_test

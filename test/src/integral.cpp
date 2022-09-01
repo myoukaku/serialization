@@ -97,6 +97,16 @@ GTEST_TEST(SerializationTest, IntegralTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	IntegralTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	IntegralTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace integral_test

@@ -86,6 +86,16 @@ GTEST_TEST(SerializationTest, StringTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	StringTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	StringTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace string_test

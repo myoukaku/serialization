@@ -99,6 +99,10 @@ GTEST_TEST(SerializationTest, FloatTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	FloatTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace float_test

@@ -9,6 +9,7 @@
 #ifndef SERIALIZATION_NVP_HPP
 #define SERIALIZATION_NVP_HPP
 
+#include <string>
 #include <type_traits>
 
 namespace serialization
@@ -23,7 +24,7 @@ public:
 		, m_value(t)
 	{}
 
-	char const* name() const
+	std::string const& name() const
 	{
 		return m_name;
 	}
@@ -34,8 +35,8 @@ public:
 	}
 
 private:
-	char const*		m_name;
-	T&				m_value;
+	std::string	m_name;
+	T&			m_value;
 
 private:
 	template <typename Archive>

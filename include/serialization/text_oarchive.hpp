@@ -29,6 +29,7 @@ public:
 	virtual ~text_oarchive_impl_base()
 	{}
 
+	virtual void save(bool) = 0;
 	virtual void save(std::intmax_t) = 0;
 	virtual void save(std::uintmax_t) = 0;
 	virtual void save(float) = 0;
@@ -36,17 +37,18 @@ public:
 	virtual void save(long double) = 0;
 	virtual void save(std::string const&) = 0;
 	virtual void save(std::wstring const&) = 0;
+	virtual void output(std::string const&) = 0;
 };
 
 template <typename CharT, typename Traits>
-inline void ouput_string(
+inline void output_quoted_string(
 	std::basic_ostream<CharT, Traits>& os,
 	std::basic_string<CharT, Traits> const& s)
 {
 	os << std::quoted(s);
 }
 
-inline void ouput_string(
+inline void output_quoted_string(
 	std::basic_ostream<char>& os,
 	std::basic_string<wchar_t> const& s)
 {
@@ -62,7 +64,7 @@ inline void ouput_string(
 	os << "\"";
 }
 
-inline void ouput_string(
+inline void output_quoted_string(
 	std::basic_ostream<wchar_t>& os,
 	std::basic_string<char> const& s)
 {
@@ -87,14 +89,21 @@ public:
 		: m_os(os)
 	{}
 
+	void save(bool t) override
+	{
+		auto const old_flags = m_os.flags();
+		m_os << std::boolalpha << t;
+		m_os.flags(old_flags);
+	}
+
 	void save(std::intmax_t t) override
 	{
-		m_os << t << " ";
+		m_os << t;
 	}
 
 	void save(std::uintmax_t t) override
 	{
-		m_os << t << " ";
+		m_os << t;
 	}
 
 	void save(float t) override
@@ -114,14 +123,17 @@ public:
 
 	void save(std::string const& t) override
 	{
-		ouput_string(m_os, t);
-		m_os << " ";
+		output_quoted_string(m_os, t);
 	}
 
 	void save(std::wstring const& t) override
 	{
-		ouput_string(m_os, t);
-		m_os << " ";
+		output_quoted_string(m_os, t);
+	}
+
+	void output(std::string const& s) override
+	{
+		m_os << s.c_str();
 	}
 
 private:
@@ -139,7 +151,7 @@ private:
 		std::array<char, digits + 1> buf{};
 		auto result = std::to_chars(buf.data(), buf.data() + buf.size(), t);
 		//std::basic_string<char_type> s(buf.data(), result.ptr);
-		m_os << buf.data() << " ";
+		m_os << buf.data();
 #endif
 	}
 
@@ -162,6 +174,7 @@ public:
 	text_oarchive& operator<<(T const& t)
 	{
 		serialization::detail::save_dispatch::invoke(*this, t);
+		m_impl->output(" ");
 		return *this;
 	}
 
@@ -169,6 +182,12 @@ public:
 	text_oarchive& operator&(T const& t)
 	{
 		return *this << t;
+	}
+
+protected:
+	void output(std::string const& s)
+	{
+		m_impl->output(s);
 	}
 
 private:
@@ -179,6 +198,10 @@ private:
 	friend void save_arithmetic(text_oarchive& oa, T const& t)
 	{
 		if constexpr (std::is_floating_point_v<T>)
+		{
+			oa.m_impl->save(t);
+		}
+		else if constexpr (std::is_same_v<T, bool>)
 		{
 			oa.m_impl->save(t);
 		}

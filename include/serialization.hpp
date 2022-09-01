@@ -13,6 +13,8 @@
 #include <serialization/binary_iarchive.hpp>
 #include <serialization/binary_oarchive.hpp>
 #include <serialization/export.hpp>
+#include <serialization/json_iarchive.hpp>
+#include <serialization/json_oarchive.hpp>
 #include <serialization/nvp.hpp>
 #include <serialization/shared_ptr.hpp>
 #include <serialization/string.hpp>
