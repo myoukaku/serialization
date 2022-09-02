@@ -61,7 +61,12 @@ void SharedPtrPolymorphicTest()
 			EXPECT_EQ(3, Base::instance_count);
 			EXPECT_EQ(2, Derived::instance_count);
 
-			ia >> a >> b >> c >> d >> e >> f;
+			ia >> a;
+			ia >> b;
+			ia >> c;
+			ia >> d;
+			ia >> e;
+			ia >> f;
 
 			EXPECT_EQ(6, Base::instance_count);
 			EXPECT_EQ(4, Derived::instance_count);
@@ -113,6 +118,16 @@ GTEST_TEST(SerializationTest, SharedPtrPolymorphicTest)
 	//	serialization::binary_oarchive,
 	//	serialization::binary_iarchive
 	//>();
+	SharedPtrPolymorphicTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	SharedPtrPolymorphicTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace shared_ptr_polymorphic_test

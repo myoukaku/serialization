@@ -38,6 +38,7 @@ public:
 	virtual void load(std::string&) = 0;
 	virtual void load(std::wstring&) = 0;
 	virtual void input(std::string&) = 0;
+	virtual void drop() = 0;
 };
 
 template <typename CharT, typename Traits>
@@ -162,6 +163,16 @@ public:
 		s = std::string(tmp.begin(), tmp.end());
 	}
 
+	void drop() override
+	{
+		std::basic_string<char_type> tmp;
+		m_is >> tmp;
+		if (tmp.length() > 1)
+		{
+			m_is.seekg(-(tmp.length() - 1), std::ios_base::cur);
+		}
+	}
+
 private:
 	template <typename T>
 	void load_float(T& t)
@@ -207,6 +218,11 @@ protected:
 	void input(std::string& s)
 	{
 		m_impl->input(s);
+	}
+
+	void drop()
+	{
+		m_impl->drop();
 	}
 
 private:

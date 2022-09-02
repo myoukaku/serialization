@@ -54,6 +54,10 @@ static const serialization::class_exporter<
 	Derived, serialization::binary_oarchive, serialization::binary_iarchive
 > dummy2{};
 
+static const serialization::class_exporter<
+	Derived, serialization::json_oarchive, serialization::json_iarchive
+> dummy3{};
+
 }	// namespace serialization_test
 
 #endif // DERIVED_HPP

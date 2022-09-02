@@ -32,9 +32,21 @@ void save_array(Archive& oa, T const& t)
 	}
 }
 
+template <typename Archive>
+void start_object(Archive&)
+{
+}
+
+template <typename Archive>
+void end_object(Archive&)
+{
+}
+
 template <typename Archive, typename T>
 void save_object(Archive& ar, T const& t)
 {
+	start_object(ar);
+
 	serialization::version_t const version = serialization::detail::get_version(t);
 
 	// version_t を save
@@ -52,6 +64,8 @@ void save_object(Archive& ar, T const& t)
 	{
 		serialize_dispatch::invoke(ar, t, version);
 	}
+
+	end_object(ar);
 }
 
 class save_dispatch

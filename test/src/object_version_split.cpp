@@ -218,6 +218,10 @@ GTEST_TEST(SerializationTest, ObjectVersionSplitTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	ObjectVersionSplitTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace object_version_split_test

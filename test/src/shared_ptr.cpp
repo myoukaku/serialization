@@ -95,6 +95,11 @@ GTEST_TEST(SerializationTest, SharedPtrTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	SharedPtrTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace shared_ptr_test

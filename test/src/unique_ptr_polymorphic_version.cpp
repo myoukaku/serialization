@@ -84,6 +84,10 @@ static const serialization::class_exporter<
 	Derived, serialization::binary_oarchive, serialization::binary_iarchive
 > dummy2{};
 
+static const serialization::class_exporter<
+	Derived, serialization::json_oarchive, serialization::json_iarchive
+> dummy3{};
+
 template <typename Stream, typename OArchive, typename IArchive>
 void UniquePtrPolymorphicVersionTest()
 {
@@ -133,6 +137,16 @@ GTEST_TEST(SerializationTest, UniquePtrPolymorphicVersionTest)
 	//	serialization::binary_oarchive,
 	//	serialization::binary_iarchive
 	//>();
+	UniquePtrPolymorphicVersionTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	UniquePtrPolymorphicVersionTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace unique_ptr_polymorphic_version_test

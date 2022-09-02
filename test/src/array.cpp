@@ -86,6 +86,10 @@ GTEST_TEST(SerializationTest, ArrayTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	ArrayTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace array_test

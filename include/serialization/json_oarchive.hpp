@@ -35,14 +35,14 @@ public:
 	{
 		if (!m_first)
 		{
-			text_oarchive::output(",\n");
+			output(",\n");
 		}
 		m_first = false;
 
-		text_oarchive::output(get_indent_string());
-		detail::save_dispatch::invoke(*((text_oarchive*)this), t.name());
-		text_oarchive::output(" : ");
-		detail::save_dispatch::invoke(*((text_oarchive*)this), t.value());
+		output(get_indent_string());
+		detail::save_dispatch::invoke(*this, t.name());
+		output(": ");
+		detail::save_dispatch::invoke(*this, t.value());
 		return *this;
 	}
 
@@ -64,17 +64,17 @@ public:
 private:
 	void start_object()
 	{
-		text_oarchive::output(get_indent_string());
-		text_oarchive::output("{\n");
+		output("{\n");
 		m_indent++;
 		m_first = true;
 	}
 
 	void end_object()
 	{
+		output("\n");
 		m_indent--;
-		text_oarchive::output(get_indent_string());
-		text_oarchive::output("\n}");
+		output(get_indent_string());
+		output("}");
 	}
 
 	std::string get_indent_string() const
@@ -88,10 +88,42 @@ private:
 	}
 
 private:
+	friend void start_object(json_oarchive& oa)
+	{
+		oa.start_object();
+	}
+
+	friend void end_object(json_oarchive& oa)
+	{
+		oa.end_object();
+	}
+
+	template <typename T>
+	friend void save_array(json_oarchive& oa, T const& t)
+	{
+		oa.output("[\n");
+		oa.m_indent++;
+		for (std::size_t i = 0; i < std::extent_v<T>; ++i)
+		{
+			if (i != 0)
+			{
+				oa.output(",\n");
+			}
+			oa.output(oa.get_indent_string());
+			detail::save_dispatch::invoke(oa, t[i]);
+		}
+		oa.output("\n");
+		oa.m_indent--;
+		oa.output(oa.get_indent_string());
+		oa.output("]");
+	}
+
+private:
 	int m_indent = 0;
 	int m_value_index = 0;
 	bool m_first = true;
 };
+
 
 }	// namespace serialization
 

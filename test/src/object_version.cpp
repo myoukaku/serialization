@@ -191,6 +191,10 @@ GTEST_TEST(SerializationTest, ObjectVersionTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	ObjectVersionTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace object_version_test

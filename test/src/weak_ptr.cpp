@@ -88,6 +88,16 @@ GTEST_TEST(SerializationTest, WeakPtrTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	WeakPtrTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	WeakPtrTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace weak_ptr_test

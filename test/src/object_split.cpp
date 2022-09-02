@@ -119,6 +119,10 @@ GTEST_TEST(SerializationTest, ObjectNonIntrusiveSplitTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	ObjectNonIntrusiveSplitTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace object_non_intrusive_split_test

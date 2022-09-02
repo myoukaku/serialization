@@ -98,6 +98,16 @@ GTEST_TEST(SerializationTest, UniquePtrPolymorphicTest)
 	//	serialization::binary_oarchive,
 	//	serialization::binary_iarchive
 	//>();
+	UniquePtrPolymorphicTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	UniquePtrPolymorphicTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace unique_ptr_polymorphic_test

@@ -118,6 +118,10 @@ GTEST_TEST(SerializationTest, ObjectNonIntrusiveTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	ObjectNonIntrusiveTest<
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace object_non_intrusive_test

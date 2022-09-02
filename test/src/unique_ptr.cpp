@@ -113,6 +113,16 @@ GTEST_TEST(SerializationTest, UniquePtrTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	UniquePtrTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	UniquePtrTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace unique_ptr_test

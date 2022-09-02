@@ -34,6 +34,8 @@ void load_array(Archive& ia, T& t)
 template <typename Archive, typename T>
 void load_object(Archive& ar, T& t)
 {
+	start_object(ar);
+
 	serialization::version_t version;
 
 	// version_t を load
@@ -51,6 +53,8 @@ void load_object(Archive& ar, T& t)
 	{
 		serialize_dispatch::invoke(ar, t, version);
 	}
+
+	end_object(ar);
 }
 
 class load_dispatch

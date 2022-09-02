@@ -169,6 +169,16 @@ GTEST_TEST(SerializationTest, BaseObjectTest)
 		serialization::binary_oarchive,
 		serialization::binary_iarchive
 	>();
+	BaseObjectTest<
+		std::stringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
+	BaseObjectTest<
+		std::wstringstream,
+		serialization::json_oarchive,
+		serialization::json_iarchive
+	>();
 }
 
 }	// namespace base_object_test
