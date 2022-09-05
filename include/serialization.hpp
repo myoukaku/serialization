@@ -23,5 +23,7 @@
 #include <serialization/unique_ptr.hpp>
 #include <serialization/version.hpp>
 #include <serialization/weak_ptr.hpp>
+#include <serialization/xml_iarchive.hpp>
+#include <serialization/xml_oarchive.hpp>
 
 #endif // SERIALIZATION_HPP

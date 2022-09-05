@@ -35,34 +35,38 @@ public:
 	virtual void load(float&) = 0;
 	virtual void load(double&) = 0;
 	virtual void load(long double&) = 0;
-	virtual void load(std::string&) = 0;
-	virtual void load(std::wstring&) = 0;
+	virtual void load(std::string&, char delim, char escape) = 0;
+	virtual void load(std::wstring&, wchar_t delim, wchar_t escape) = 0;
 	virtual void input(std::string&) = 0;
-	virtual void drop() = 0;
+	virtual char input_one_char() = 0;
 };
 
 template <typename CharT, typename Traits>
 inline void input_quoted_string(
 	std::basic_istream<CharT, Traits>& is,
-	std::basic_string<CharT, Traits>& s)
+	std::basic_string<CharT, Traits>& s,
+	CharT delim,
+	CharT escape)
 {
-	is >> std::quoted(s);
+	is >> std::quoted(s, delim, escape);
 }
 
 inline void input_quoted_string(
 	std::basic_istream<char>& is,
-	std::basic_string<wchar_t>& s)
+	std::basic_string<wchar_t>& s,
+	char delim,
+	char escape)
 {
 	char c;
 	is >> c;
 	for (;;)
 	{
 		is >> c;
-		if (c == '"')
+		if (c == delim)
 		{
 			break;
 		}
-		if (c == '\\')
+		if (c == escape)
 		{
 			is >> c;
 			continue;
@@ -80,18 +84,20 @@ inline void input_quoted_string(
 
 inline void input_quoted_string(
 	std::basic_istream<wchar_t>& is,
-	std::basic_string<char>& s)
+	std::basic_string<char>& s,
+	wchar_t delim,
+	wchar_t escape)
 {
 	wchar_t wc;
 	is >> wc;
 	for (;;)
 	{
 		is >> wc;
-		if (wc == L'"')
+		if (wc == delim)
 		{
 			break;
 		}
-		if (wc == L'\\')
+		if (wc == escape)
 		{
 			is >> wc;
 			continue;
@@ -146,14 +152,14 @@ public:
 		load_float(t);
 	}
 
-	void load(std::string& t) override
+	void load(std::string& t, char delim, char escape) override
 	{
-		input_quoted_string(m_is, t);
+		input_quoted_string(m_is, t, delim, escape);
 	}
 
-	void load(std::wstring& t) override
+	void load(std::wstring& t, wchar_t delim, wchar_t escape) override
 	{
-		input_quoted_string(m_is, t);
+		input_quoted_string(m_is, t, delim, escape);
 	}
 
 	void input(std::string& s) override
@@ -163,7 +169,7 @@ public:
 		s = std::string(tmp.begin(), tmp.end());
 	}
 
-	void drop() override
+	char input_one_char() override
 	{
 		std::basic_string<char_type> tmp;
 		m_is >> tmp;
@@ -171,6 +177,8 @@ public:
 		{
 			m_is.seekg(-(tmp.length() - 1), std::ios_base::cur);
 		}
+
+		return tmp[0];
 	}
 
 private:
@@ -215,14 +223,24 @@ public:
 	}
 
 protected:
+	void load_quoted_string(std::string& s, char delim, char escape)
+	{
+		m_impl->load(s, delim, escape);
+	}
+
 	void input(std::string& s)
 	{
 		m_impl->input(s);
 	}
 
+	char input_one_char()
+	{
+		return m_impl->input_one_char();
+	}
+
 	void drop()
 	{
-		m_impl->drop();
+		(void)input_one_char();
 	}
 
 private:
@@ -257,7 +275,7 @@ private:
 	template <typename CharT>
 	friend void load_string(text_iarchive& ia, std::basic_string<CharT>& t)
 	{
-		ia.m_impl->load(t);
+		ia.m_impl->load(t, CharT('"'), CharT('\\'));
 	}
 };
 
