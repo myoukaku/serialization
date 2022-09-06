@@ -9,9 +9,14 @@
 #ifndef SERIALIZATION_POINTER_SAVER_HPP
 #define SERIALIZATION_POINTER_SAVER_HPP
 
+#include <serialization/binary_oarchive.hpp>
+#include <serialization/json_oarchive.hpp>
+#include <serialization/text_oarchive.hpp>
+#include <serialization/xml_oarchive.hpp>
 #include <map>
 #include <string>
 #include <functional>
+#include <typeindex>
 
 namespace serialization
 {
@@ -19,7 +24,6 @@ namespace serialization
 namespace detail
 {
 
-template <typename Archive>
 class pointer_saver
 {
 public:
@@ -30,12 +34,12 @@ public:
 	}
 
 private:
-	template <typename T>
+	template <typename Archive, typename T>
 	struct save_func
 	{
-		void operator()(Archive& oa, void const* p) const
+		void operator()(void* oa, void const* p) const
 		{
-			oa << make_nvp("value", *(static_cast<T const*>(p)));
+			*(static_cast<Archive*>(oa)) << make_nvp("value", *(static_cast<T const*>(p)));
 		}
 	};
 
@@ -44,19 +48,23 @@ public:
 	void register_class(void)
 	{
 		auto name = T::static_class_name();
-		m_f[name] = save_func<T>{};
+		m_f[typeid(text_oarchive)][name] = save_func<text_oarchive, T>{};
+		m_f[typeid(binary_oarchive)][name] = save_func<binary_oarchive, T>{};
+		m_f[typeid(json_oarchive)][name] = save_func<json_oarchive, T>{};
 	}
 
-	template <typename T>
+	template <typename Archive, typename T>
 	void save_ptr(Archive& oa, std::string const& name, T const* p)
 	{
-		if (m_f.find(name) != m_f.end())
+		auto& m = m_f[typeid(Archive)];
+		if (m.find(name) != m.end())
 		{
-			m_f[name](oa, p);
-			return;
+			m[name](&oa, p);
 		}
-
-		save_func<T>{}(oa, p);
+		else
+		{
+			save_func<Archive, T>{}(&oa, p);
+		}
 	}
 
 private:
@@ -64,7 +72,8 @@ private:
 	{
 	}
 
-	std::map<std::string, std::function<void(Archive&, void const*)>> m_f;
+	std::map<std::type_index, 
+		std::map<std::string, std::function<void(void*, void const*)>>> m_f;
 };
 
 }	// namespace detail

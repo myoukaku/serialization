@@ -9,9 +9,14 @@
 #ifndef SERIALIZATION_pointer_loader_HPP
 #define SERIALIZATION_pointer_loader_HPP
 
+#include <serialization/binary_iarchive.hpp>
+#include <serialization/json_iarchive.hpp>
+#include <serialization/text_iarchive.hpp>
+#include <serialization/xml_iarchive.hpp>
 #include <map>
 #include <string>
 #include <functional>
+#include <typeindex>
 
 namespace serialization
 {
@@ -19,7 +24,6 @@ namespace serialization
 namespace detail
 {
 
-template <typename Archive>
 class pointer_loader
 {
 public:
@@ -30,13 +34,13 @@ public:
 	}
 
 private:
-	template <typename T>
+	template <typename Archive, typename T>
 	struct load_func
 	{
-		void* operator()(Archive& ia) const
+		void* operator()(void* ia) const
 		{
 			auto p = new T();
-			ia >> make_nvp("value", *p);
+			*(static_cast<Archive*>(ia)) >> make_nvp("value", *p);
 			return p;
 		}
 	};
@@ -46,15 +50,18 @@ public:
 	void register_class(void)
 	{
 		auto name = T::static_class_name();
-		m_f[name] = load_func<T>{};
+		m_f[typeid(text_iarchive)][name] = load_func<text_iarchive, T>{};
+		m_f[typeid(binary_iarchive)][name] = load_func<binary_iarchive, T>{};
+		m_f[typeid(json_iarchive)][name] = load_func<json_iarchive, T>{};
 	}
 
-	template <typename T>
+	template <typename T, typename Archive>
 	T* load_ptr(Archive& ia, std::string const& name)
 	{
-		if (m_f.find(name) != m_f.end())
+		auto& m = m_f[typeid(Archive)];
+		if (m.find(name) != m.end())
 		{
-			return (T*)m_f[name](ia);
+			return (T*)m[name](&ia);
 		}
 
 		if constexpr (std::is_abstract_v<T>)
@@ -63,7 +70,7 @@ public:
 		}
 		else
 		{
-			return (T*)load_func<T>{}(ia);
+			return (T*)load_func<Archive, T>{}(&ia);
 		}
 	}
 
@@ -72,7 +79,8 @@ private:
 	{
 	}
 
-	std::map<std::string, std::function<void*(Archive&)>> m_f;
+	std::map<std::type_index, 
+		std::map<std::string, std::function<void*(void*)>>> m_f;
 };
 
 }	// namespace detail

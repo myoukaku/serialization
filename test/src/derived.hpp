@@ -46,17 +46,7 @@ public:
 	static inline int instance_count = 0;
 };
 
-static const serialization::class_exporter<
-	Derived, serialization::text_oarchive, serialization::text_iarchive
-> dummy1{};
-
-static const serialization::class_exporter<
-	Derived, serialization::binary_oarchive, serialization::binary_iarchive
-> dummy2{};
-
-static const serialization::class_exporter<
-	Derived, serialization::json_oarchive, serialization::json_iarchive
-> dummy3{};
+static const serialization::class_exporter<Derived> dummy1{};
 
 }	// namespace serialization_test
 

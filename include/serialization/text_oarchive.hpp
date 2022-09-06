@@ -19,6 +19,7 @@
 #include <array>
 #include <string>
 #include <iomanip>
+#include <charconv>
 
 namespace serialization
 {

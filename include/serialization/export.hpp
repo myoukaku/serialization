@@ -15,13 +15,13 @@
 namespace serialization
 {
 
-template <typename T, typename OArchive, typename IArchive>
+template <typename T>
 struct class_exporter
 {
 	class_exporter()
 	{
-		serialization::detail::pointer_saver<OArchive>::get_instance().register_class<T>();
-		serialization::detail::pointer_loader<IArchive>::get_instance().register_class<T>();
+		serialization::detail::pointer_saver::get_instance().register_class<T>();
+		serialization::detail::pointer_loader::get_instance().register_class<T>();
 	}
 };
 

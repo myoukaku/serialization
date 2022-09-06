@@ -31,7 +31,7 @@ void save(Archive& oa, std::shared_ptr<T> const& t)
 		{
 			std::string s = detail::get_class_name(*t);
 			oa << make_nvp("class_id", s);
-			detail::pointer_saver<Archive>::get_instance().save_ptr(oa, s, t.get());
+			detail::pointer_saver::get_instance().save_ptr(oa, s, t.get());
 			oa.register_shared_ptr(t);
 		}
 	}
@@ -50,7 +50,7 @@ void load(Archive& ia, std::shared_ptr<T>& t)
 		{
 			std::string s;
 			ia >> make_nvp("class_id", s);
-			auto p = detail::pointer_loader<Archive>::get_instance().load_ptr<T>(ia, s);
+			auto p = detail::pointer_loader::get_instance().load_ptr<T>(ia, s);
 			t.reset(p);
 			ia.register_shared_ptr(t);
 		}
